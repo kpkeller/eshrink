@@ -1,0 +1,15 @@
+Package: eshrink
+Title: Shrinkage for Effect Estimation
+Version: 0.0.9
+Author: Joshua Keller
+Maintainer: Joshua Keller <jkelle46@jhu.edu>
+Description: Computes shrinkage estimators for regression problems. Selects
+    penalty parameter by minimizing bias and variance in effect estimate.
+Depends:
+    R (>= 3.2.0)
+Imports:
+    MASS,
+    glmnet
+License: GPL (>=2)
+LazyData: true
+RoxygenNote: 5.0.1
