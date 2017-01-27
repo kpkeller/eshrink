@@ -4,15 +4,15 @@
 #
 # Included in this file:
 #
-#	simLassoEst()
-#	lassofutureEst()
+#	simLASSO()
+#	festLASSO()
 #
 #####################################
 
 
 
 
-##' @name simLassoEst
+##' @name simLASSO
 ##' @title Compute Lasso Estimator for simulated Data
 ##
 ##' @description Simulates data from a regression model
@@ -47,11 +47,11 @@
 # and that first column is variable of interest
 # Also hard coded right now is that all but
 # exposure of interest are penalized
-simLassoEst <- function(lambda, X,  beta, sigma, penalize, rescale.lambda=TRUE, ind=1){
+simLASSO <- function(lambda, X,  beta, sigma, penalize, rescale.lambda=TRUE, ind=1){
 	n <- nrow(X)
 	p <- ncol(X)
 	
-	if (ind==0){
+	if (sum(abs(ind))==0){
 		ind <- 1:length(beta)
 	}
 	
@@ -77,48 +77,76 @@ simLassoEst <- function(lambda, X,  beta, sigma, penalize, rescale.lambda=TRUE, 
 }
 
 
-	
 
-##' @name lassofEst
-##' @title Compute Lasso Estimator for simulated Data
-##
-##' @description To be added...
-##
-##' @details To be added...
-##
-##  Input:
-##' @param lambda Penalty factor to be applied
-##'	@param X Design matrix of regression problem
-##' @param y outcome vector. Typically centered.
-##' @param type Which type of estimate should be computed? See details.
-##' @param penalize Vector giving penalty structure. Supplied to glmnet as `\code{penalty.factor}'.
-##'	@param rescale.lambda Should lambda be rescaled to account for the 
-##'		default re-scaling done by glmnet?
-##' @param scale Logical indicating whether the design matrix X be scaled. See details.
-##'	@param returnMSE Logical indicating whether mse object should be returned.
-##' @param lseq Sequence of penalty values to consider.
+mseLASSO <- function(lambda, X, postsamp, nPost, B, penalize, ind){
+	Bias2 <- matrix(NA, nrow=nPost, ncol=length(lambda))
+	MBV <- MSE <- Var <- Bias2
+	coefsLASSO <- array(NA, dim=c(B, ncol(X), length(lambda)))
+	estMeanMSE <- matrix(NA, nrow=nPost, ncol=ncol(X))
+	estMeanMBV <- estMeanMSE
+	estVarMSE <- array(NA, dim=list(nPost, ncol(X), ncol(X)))
+	estVarMBV <- estVarMSE
+	for (bg in 1:nPost){
+	for (i in 1:B){
+		set.seed(50005 + i)
+		coefsLASSO[i, , ]  <- as.matrix(simLASSO(lambda=lambda, X=X, beta= postsamp$beta[bg,], sigma=sqrt(postsamp$sigma2[bg]), penalize=penalize, rescale.lambda=FALSE, ind=1:ncol(X))) # Don't rescale, because already rescaled
+	}
+	Bias2[bg,] <-  colSums((apply(coefsLASSO[, ind, , drop=FALSE], 2:3, mean) - postsamp$beta[bg,ind])^2)
+	Var[bg,] <- colSums(apply(coefsLASSO[, ind, , drop=FALSE], 2:3, getPopVar))
+	MSE[bg, ] <- Bias2[bg,] + Var[bg,]
+	MBV[bg,] <- pmax(Bias2[bg,], Var[bg,])	
+	MSEmin <- which.min(MSE[bg, ])
+	MBVmin <- which.min(MBV[bg, ])
+	
+	estMeanMSE[bg,] <- apply(coefsLASSO[, , MSEmin], 2, mean)
+	estMeanMBV[bg,] <- apply(coefsLASSO[, , MBVmin], 2, mean)
+	estVarMSE[bg, , ] <- var(coefsLASSO[,, MSEmin])
+	estVarMBV[bg, , ] <- var(coefsLASSO[,, MBVmin])
+	}
+	
+	out <- list(Bias2=Bias2, Var=Var, MSE=MSE, MBV = MBV , estMeanMSE= estMeanMSE, estMeanMBV= estMeanMBV, estVarMSE= estVarMSE, estVarMBV= estVarMBV )
+	out
+}	
+
+## @name festLASSO
+##' @rdname festRidge
+# ##' @title Compute Lasso Estimator for simulated Data
+# ##
+# ##' @description To be added...
+# ##
+# ##' @details To be added...
+# ##
+# ##  Input:
+# ##'	@param X Design matrix of regression problem
+# ##' @param y outcome vector. Typically centered.
+# ##' @param loss Loss function for choosing the penaly parameter. See details.
+# ##' @param penalize Vector giving penalty structure. Supplied to glmnet as `\code{penalty.factor}'.
+##'	@param rescale.lambda If \code{TRUE}, then lambda is rescaled to account for the 
+##'		default re-scaling done by \code{glmnet}. Can also be a scalar scaling factor.
+# ##' @param scale Logical indicating whether the design matrix X be scaled. See details.
+# ##'	@param returnMSE Logical indicating whether mse object should be returned.
+# ##'	@param ind Vector of ntegers or logicals indicating which coefficients the loss is to be computed on.
+# ##' @param lseq Sequence of penalty values to consider. Sorted in decreasing order.
 ##' @param B Number of future datasets to simulate for each point in posterior sample.
-##'	@param se.version Which version of Standard errors to report?
-##' @param postsamp List containing posterior sample (from \code{samplePosterior}). If
-##'		missing, then a posterior sample is drawn.  Currently checks on the provided
-##'		\code{postsamp} are limited, so use with caution.  Designed to facilitate
-##'		simualtions or other scenarios where it may be pre-computed.
-##' @param returnPS logical indicating whether or not the full posterior sample should
-##'		be included in output.
-##' @param nPost Size of posterior sample to compute
-##' @param ... Other arguments passed to \code{samplePosterior}
-##'
+# ##'	@param se.version Which version of Standard errors to report?
+# ##' @param postsamp List containing posterior sample (from \code{samplePosterior}). If
+# ##'		missing, then a posterior sample is drawn.  Currently checks on the provided
+# ##'		\code{postsamp} are limited, so use with caution.  Designed to facilitate
+# ##'		simualtions or other scenarios where it may be pre-computed.
+# ##' @param returnPS logical indicating whether or not the full posterior sample should
+# ##'		be included in output.
+# ##' @param nPost Size of posterior sample to compute
+# ##' @param ... Other arguments passed to \code{samplePosterior}
+# ##'
 ##' @export
-##' @import glmnet
-##
-##' @seealso \code{\link{ridgefEst}}, \code{\link{simLassoEst}}
-##
-# Need to make penalty factor code
-# more general
-lassofEst <- function(X, y, type=c("fMSE", "fMBV", "all"), lseq, B=500, penalize=NULL, rescale.lambda=TRUE, scale=FALSE, returnMSE=FALSE, se.version=c("varExp", "full", "both"), postsamp, returnPS=FALSE, nPost=1000, ...){
+# ##' @import glmnet
+# ##
+# ##' @seealso \code{\link{festRidge}}, \code{\link{simLASSO}}
+# ##
+festLASSO <- function(X, y, loss=c("fMSE", "fMBV", "both"), ind=1, lseq, B=500, penalize, rescale.lambda=TRUE, scale=FALSE, returnMSE=FALSE, postsamp, returnPS=FALSE, nPost=1000, se.version=c("varExp", "full", "none"), ...){
 	
 	fncall <- match.call()
-	type <- match.arg(type)
+	loss <- match.arg(loss)
 	se.version <- match.arg(se.version)	
 		
 	if(scale) X <- scale(X)
@@ -130,7 +158,11 @@ lassofEst <- function(X, y, type=c("fMSE", "fMBV", "all"), lseq, B=500, penalize
 	XtX <- crossprod(X)
 	p <- ncol(X)
 	
-	if(missing(penalize)) penalize <- c(0, rep(1,p-1))
+	if(missing(penalize)) {
+		penalize <- rep(1, p)
+		penalize[ind] <- 0
+		#c(0, rep(1,p-1))
+	}
 	penalize <- as.numeric(penalize)
 	if (any(penalize>1) | any(penalize<0)) stop("Element of penalize must be between 0 and 1.")
 	
@@ -144,98 +176,59 @@ lassofEst <- function(X, y, type=c("fMSE", "fMBV", "all"), lseq, B=500, penalize
 		}
 	}
 	
-	# Make Posterior Draw
-	if(missing(postsamp)) postsamp <- samplePosterior(X, y, n= nPost, ...)
+	# Make Posterior Draw, if missing
+	if(missing(postsamp)) {
+		postsamp <- samplePosterior(X, y, n= nPost, ...)
+	} else {
+		nPost <- length(postsamp$sigma2)
+	}
+	
 
-	Bias2 <- matrix(NA, nrow=nPost, ncol=length(lseq))
-	MSE <- Var <- Bias2
-	lassoEsts <- array(NA, dim=c(B, length(lseq)))
-	lassoEstVarMBV <- lassoEstVarMSE <- lassoEstMeanMBV  <- lassoEstMeanMSE <- numeric(nPost)
-	for (bg in 1:nPost){
-	for (i in 1:B){
-		set.seed(50005 + i)
-		lassoEsts[i, ] <- simLassoEst(lambda=lseq, X=X, beta= postsamp $beta[bg,], sigma=sqrt(postsamp $sigma2[bg]), penalize= penalize, rescale.lambda=FALSE) # DOn't rescale, because already rescaled
-	}
-	# Note this hard coding of 'X' here.
-	# should make more general
-	Bias2[bg,] <-  apply(lassoEsts, 2, getBias2, truth= postsamp $beta[bg,"X"])
-	Var[bg,] <- apply(lassoEsts, 2, getPopVar)
-	MSE[bg, ] <- Bias2[bg,] + Var[bg,]
-	MBV <- pmax(Bias2[bg,], Var[bg,])
-	if (type =="fMSE") {
-		lassoEstMeanMSE[bg] <- mean(lassoEsts[,which.min(MSE[bg, ])])
-		lassoEstVarMSE[bg] <- var(lassoEsts[,which.min(MSE[bg, ])])
-	} else if (type =="fMBV"){
-		lassoEstMeanMBV[bg] <- mean(lassoEsts[,which.min(MBV)])
-		lassoEstVarMBV[bg] <- var(lassoEsts[,which.min(MBV)])		
-	} else if (type =="all"){
-		lassoEstMeanMSE[bg] <- mean(lassoEsts[,which.min(MSE[bg, ])])
-		lassoEstMeanMBV[bg] <- mean(lassoEsts[,which.min(MBV)])
-		lassoEstVarMSE[bg] <- var(lassoEsts[,which.min(MSE[bg, ])])
-		lassoEstVarMBV[bg] <- var(lassoEsts[,which.min(MBV)])
-	}
-	}
+	# Compute Bias2 and Variance, using simulated values
+	lmse <- mseLASSO(lambda=lseq, X=X, postsamp=postsamp, nPost=nPost, B=B, penalize=penalize, ind=ind)
 
+	out <- list()
 	# Get estimator
-	if(type=="fMSE"){
-		pmse <- colMeans(MSE)
+	if(loss=="fMSE" | loss=="both"){
+		pmse <- colMeans(lmse$MSE)
 		lmin <- which.min(pmse)
 		gfit <- glmnet::glmnet(x= X, y= y, lambda= lseq,  penalty.factor= penalize, standardize=FALSE, intercept=FALSE, family="gaussian")
 		beta <- gfit$beta[,lmin]
 		if (se.version=="varExp") {
-			se <- sqrt(var(lassoEstMeanMSE))
+			se <- sqrt(diag(var(lmse$estMeanMSE)))
 		} else if (se.version=="full") {
-			se <- sqrt(var(lassoEstMeanMSE) + mean(lassoEstVarMSE))
-		} else if (se.version=="both") {
-			se <- c(varExp= sqrt(var(lassoEstMeanMSE)), full=sqrt(var(lassoEstMeanMSE) + mean(lassoEstVarMSE)))
-		}
+			se <- sqrt(diag(var(lmse$estMeanMSE)  + apply(lmse$estVarMSE, 2:3, mean)))
+		} 
+		# else if (se.version=="both") {
+			# se <- c(varExp= sqrt(var(lassoEstMeanMSE)), full=sqrt(var(lassoEstMeanMSE) + mean(lassoEstVarMSE)))
+		# }
 		if (scale) {
 			beta <- beta/attributes(X)$"scaled:scale"
 			se <- se/attributes(X)$"scaled:scale"[1]
 		}
-		out <- list(beta=beta, lambda=lseq[lmin], lmin=lmin, se=se)
-	} else if (type=="fMBV"){
-		pmaxBias2Var <- colMeans(pmax(Bias2, Var))
+		out$fMSE <- list(beta=beta, lambda=lseq[lmin], lmin=lmin, se=se)
+	}
+	if (loss=="fMBV" | loss=="both"){
+		pmaxBias2Var <- colMeans(lmse$MBV)
 		lmin <- which.min(pmaxBias2Var)
 		gfit <- glmnet::glmnet(x= X, y= y, lambda= lseq,  penalty.factor= penalize, standardize=FALSE, intercept=FALSE, family="gaussian")
 		beta <- gfit$beta[,lmin]
-		if (se.version=="varExp") {
-			se <- sqrt(var(lassoEstMeanMBV))
+if (se.version=="varExp") {
+			se <- sqrt(diag(var(lmse$estMeanMBV)))
 		} else if (se.version=="full") {
-			se <- sqrt(var(lassoEstMeanMBV) + mean(lassoEstVarMBV))
-		} else if (se.version=="both") {
-			se <- c(varExp= sqrt(var(lassoEstMeanMBV)), full=sqrt(var(lassoEstMeanMBV) + mean(lassoEstVarMBV)))
-		}
-		if (scale) {
-			beta <- beta/attributes(X)$"scaled:scale"
-			se <- se/attributes(X)$"scaled:scale"[1]
-		}
-		out <- list(beta=beta, lambda=lseq[lmin], lmin=lmin, se=se)
-	} else if (type=="all"){
-		pmaxBias2Var <- colMeans(pmax(Bias2, Var))
-		lminBias2Var <- which.min(pmaxBias2Var)
-		gfit <- glmnet::glmnet(x= X, y= y, lambda= lseq,  penalty.factor= penalize, standardize=FALSE, intercept=FALSE, family="gaussian")
-		betaMaxBias2var <- gfit$beta[, lminBias2Var]
-		pmse <- colMeans(MSE)
-		lmin <- which.min(pmse)
-		betaMSE <- gfit$beta[, lmin]
-		if (se.version=="varExp") {
-			se <- c(fMSE=sqrt(var(lassoEstMeanMSE)), fMBV=sqrt(var(lassoEstMeanMBV)))
-		} else if (se.version=="full") {
-			se <- c(fMSE=sqrt(var(lassoEstMeanMSE) + mean(lassoEstVarMSE)), fMBV=sqrt(var(lassoEstMeanMBV) + mean(lassoEstVarMBV)))
-		} else if (se.version=="both") {
-		se <- c(fMSE_varExp=sqrt(var(lassoEstMeanMSE)), fMSE_full=sqrt(var(lassoEstMeanMSE) + mean(lassoEstVarMSE)), fMBV_varExp=sqrt(var(lassoEstMeanMBV)), fMBV_full=sqrt(var(lassoEstMeanMBV) + mean(lassoEstVarMBV)))
-		}				
-		if (scale) {
-			betaMSE <- betaMSE/attributes(X)$"scaled:scale"
-			betaMaxBias2var <- betaMaxBias2var/attributes(X)$"scaled:scale"
-			se <- se/attributes(X)$"scaled:scale"[1]
-		}
-		out <- list(beta=cbind(fMSE=betaMSE, fMBV= betaMaxBias2var), lambda=c(fMSE =lseq[lmin], fMBV=lseq[lminBias2Var]), lmin=c(fMSE =lmin, fMBV =lminBias2Var), se=se, call=fncall)
+			se <- sqrt(diag(var(lmse$estMeanMBV)  + apply(lmse$estVarMBV, 2:3, mean)))
+		} 
+		# else if (se.version=="both") {
+			# se <- c(varExp= sqrt(var(lassoEstMeanMSE)), full=sqrt(var(lassoEstMeanMSE) + mean(lassoEstVarMSE)))
+		# }
+
+		out$fMBV <- list(beta=beta, lambda=lseq[lmin], lmin=lmin, se=se)
 	}
 
 	if (returnMSE){
-		out <- list(out, MSE=MSE, Bias2=Bias2, Var=Var)
+		out$MSE <- lmse$MSE
+		out$Bias2 <- lmse$Bias2
+		out$Var <- lmse$Var
 	}
 	if (returnPS){
 		out$postsamp <- postsamp
