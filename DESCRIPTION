@@ -1,6 +1,6 @@
 Package: eshrink
 Title: Shrinkage for Effect Estimation
-Version: 0.0.10
+Version: 0.0.11
 Author: Joshua Keller
 Maintainer: Joshua Keller <jkelle46@jhu.edu>
 Description: Computes shrinkage estimators for regression problems. Selects

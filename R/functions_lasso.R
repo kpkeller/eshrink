@@ -198,10 +198,9 @@ festLASSO <- function(X, y, loss=c("fMSE", "fMBV", "both"), ind=1, lseq, B=500, 
 			se <- sqrt(diag(var(lmse$estMeanMSE)))
 		} else if (se.version=="full") {
 			se <- sqrt(diag(var(lmse$estMeanMSE)  + apply(lmse$estVarMSE, 2:3, mean)))
-		} 
-		# else if (se.version=="both") {
-			# se <- c(varExp= sqrt(var(lassoEstMeanMSE)), full=sqrt(var(lassoEstMeanMSE) + mean(lassoEstVarMSE)))
-		# }
+		}  else if (se.version=="none") {
+			se <- rep(0, length(beta))
+		}
 		if (scale) {
 			beta <- beta/attributes(X)$"scaled:scale"
 			se <- se/attributes(X)$"scaled:scale"[1]
@@ -217,11 +216,9 @@ if (se.version=="varExp") {
 			se <- sqrt(diag(var(lmse$estMeanMBV)))
 		} else if (se.version=="full") {
 			se <- sqrt(diag(var(lmse$estMeanMBV)  + apply(lmse$estVarMBV, 2:3, mean)))
-		} 
-		# else if (se.version=="both") {
-			# se <- c(varExp= sqrt(var(lassoEstMeanMSE)), full=sqrt(var(lassoEstMeanMSE) + mean(lassoEstVarMSE)))
-		# }
-
+		}  else if (se.version=="none") {
+			se <- rep(0, length(beta))
+		}
 		out$fMBV <- list(beta=beta, lambda=lseq[lmin], lmin=lmin, se=se)
 	}
 
