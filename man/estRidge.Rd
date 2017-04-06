@@ -13,7 +13,8 @@ estRidge(lambda, X, y, penalize, XtX = crossprod(X))
 
 \item{y}{outcome vector. Unless \code{X} contains an intercept column, this should typically be centered.}
 
-\item{penalize}{vector giving penalty structure. Values must be in [0, 1].}
+\item{penalize}{vector giving penalty structure. Values must be in [0, 1].
+See Details for more information.}
 
 \item{XtX}{(optional) cross product of the design matrix. If running simulations or 
 other procedure for identical \code{X}, providing a pre-computed value 
