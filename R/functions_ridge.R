@@ -9,7 +9,7 @@
 #	biasRidge()
 #	varRidge()
 #	mseRidge()
-#	vcov.festRidge()
+#	vcovfestRidge()
 #	festRidge()
 #
 
@@ -19,27 +19,30 @@
 ##
 ##' @description Computes a vector of regression coefficients for a provided ridge penalty.
 ##
-## Computes the ridge estimator from the regression of y on X, with penalty (vector!) penalize.
+##
 ##' @details 
-##' The input \code{penalize} is a vector of penalty factors, 
+##' The input \code{penalize} is a vector of ridge penalty factors, 
 ##'	such that the penalty for covariate j is \code{lambda*penalize[j]}.
 ##' Although its primary purpose is for indicating which variables to penalize (1)
 ##' and which to not penalize (0), fractional values between 0 and 1 are accepted.
-##’ Defaults to c(0, rep(1, p-1)), where
-##’ p is number of columns in X (this penalizes all coefficients but 
-##’ the first).  
+##' Defaults to c(0, rep(1, p-1)), where
+##' p is number of columns in X (this penalizes all coefficients but 
+##' the first).  
+##' 
+##' The design matrix \code{X} is assumed to contain only numeric values, so 
+##'			any factors should be coded according to desired contrast (e.g., via \code{\link{model.matrix}})
 ##'
 ##' 
 ##
 ##  Input:
-##' @param lambda Ridge penalty factor 
-##' @param X Design matrix for the regression. Assumed to contain only numeric values, so 
-##'			any factors should be coded according to desired contrast (e.g., via \code{\link{model.matrix}})
-##' @param y Outcome vector. Unless \code{X} contains an intercept column, this should typically be centered.
-##' @param penalize Vector giving penalty structure. Values must be in [0, 1].
+##' @param lambda ridge penalty factor 
+##' @param X design matrix for the regression. 
+##' @param y outcome vector. Unless \code{X} contains an intercept column, this should typically be centered.
+##' @param penalize vector giving penalty structure. Values must be in [0, 1].
 ##’	See Details for more information.
-##' @param XtX the cross product of the design matrix. Computed from
-##'		\code{X} if not provided.
+##' @param XtX (optional) cross product of the design matrix. If running simulations or 
+##'		other procedure for identical \code{X}, providing a pre-computed value 
+##'		can reduce computational cost.
 ##
 ##' @export
 ##' @author Joshua Keller
@@ -53,121 +56,51 @@ estRidge <- function(lambda, X, y,  penalize, XtX=crossprod(X)){
 }
 
 
-##' @name biasRidge
-##' @title Bias of Ridge Estimator
-##
-##' @description Computes the analytic bias of ridge estimator
-##
-##' @details If \code{beta} is provided as a matrix, this will treat
-##' each column of \code{beta} as a different true parameter vector 
-##' and return a matrix of bias values (or a vector, if \code{ind} has length 1).
-##'
-##
-##  Input:
-##' @param lambda Penalty parameter (should have length 1).
-##' @param beta True parameter values. Either a vector of length \code{p} or a 
-##'			\code{p} x \code{d} matrix.
-##' @param XtX Cross product of design matrix
-##' @param penalize Vector of penalty factors. See \code{\link{estRidge}} for more information.
-##' @param ind Numerical or logical vector indicating which elements
-##'		should be returned. Defaults to the first element.
-##' @param XtXlamIinv Optional explicit value of \code{(XtX + diag(lambda*penalize))^(-1)}. Pre-computing this may save time for simulations.
-##
-##' @export
-##' @author Joshua Keller
-##'	@seealso \code{\link{mseRidge}, \link{varRidge}}
-biasRidge <- function (lambda, beta, XtX, penalize=c(0, rep(1, ncol(XtX)-1)), ind = 1, XtXlamIinv=NULL) {
-    if (is.null(XtXlamIinv)){
-    	p <- ncol(XtX)
-	    if(nrow(XtX)!=p) stop("XtX must be square.")
-	    penalize <- as.numeric(penalize)
-	    if (max(abs(penalize)) > 1) 
-	        stop("Element of penalize must be <= 1.")
-	    if (length(lambda) > 1) {
-	        lambda <- lambda[1]
-	        warning("lambda should be of length 1. Only using first value.")
-	    }
-	    penalty <- lambda * penalize
-	    XtXlamIinv <- chol2inv(chol(XtX + diag(penalty)))
-    } else {
-	    p <- ncol(XtXlamIinv)	
-    }
-    if (is.matrix(beta) && nrow(beta) != p) 
-        stop("Beta should be vector, or matrix with ncol(XtX) rows.")
-	XtXlamIinvB <- crossprod(penalty*t(XtXlamIinv[ind, , drop=F]),  beta)
-    return(XtXlamIinvB)
-}
-
-
-##' @name varRidge
-##' @title Variance of Ridge Estimator
-##
-##' @description Computes the variance matrix of a ridge estimator, conditional on the penalty and global variance \code{sigma2}.
-##
-##' @details See \code{\link{estRidge}} for description of \code{penalize} parameter.
-##
-##  Input:
-##' @param XtX Cross product of design matrix
-##' @param lambda Penalty parameter.
-##'	@param penalize Vector giving what to penalize
-##' @param ind Numerical or logical vector indicating which elements
-##'		of the variance matrix diagonal should be returned. Defaults to the
-##'		(1,1) element
-##' @param sigma2 The true variance parameter
-##' @param XtXlamIinv Explicit value of \eqn{(X'X + diag(penalty))^(-1)},
-##'		where \code{penalty=lambda*penalize}. Useful
-##'		for simulations to save computation.
-##' @export
-##' @author Joshua Keller
-##' @seealso \code{\link{mseRidge}, \link{biasRidge}}
-varRidge <- function(lambda, XtX, penalize, sigma2=1, ind=1, XtXlamIinv=NULL){
-	if (is.null(XtXlamIinv)) {
-		if(missing(penalize)) penalize <- c(0, rep(1, ncol(XtX)-1))
-		penalize <- as.numeric(penalize)
-		if (max(abs(penalize))>1) stop("Element of penalize must be <= 1.")
-		penalty <- lambda*penalize	
-		XtXlamIinv <- chol2inv(chol(XtX + diag(penalty)))
-	}
-	rVar <-  sigma2 * XtXlamIinv %*% XtX %*% XtXlamIinv
-	return(rVar[ind, ind])
-}
-
-
-
-
-
-
 
 ##' @name mseRidge
-##' @title Compute MSE for Ridge Estimator
+##' @title Compute MSE, Bias, and Variance for Ridge Estimator
 ##
-##' @description Computes the mean-squared error (MSE) for ridge estimators given different
+##' @description Computes the analytic mean-squared error (MSE), bias, and 
+##'		variance for ridge regression estimators given different
 ##'		values of the true \code{beta} and \code{sigma2} parameters.
 ##
-##' @details The bias and variance are computed using the functions
-##'		\code{\link{biasRidge}} and \code{\link{varRidge}}. 
+##' @details 
+##' 	The computations assume that all covariates are correctly included in the
+##'		mean model and bias is due only to penalization. The bias is given by:
 ##'
-##		The \code{XtXlamIinvB} and \code{returmMSE} arguments were designed
-##		for simulations, where pre-computation of matrices and reducing
-##		output provides computational benefits.  These are typically
-##		not needed for analysis of a single dataset.
-##' 	Explicit value(s) of (X'X + diag(penalty))^{-1} can be provided
-##'		through the argument \code{XtXlamIinv}. If length of \code{lambda} is greater than 1,
-##'		this should be provided as a list.
+##'			\eqn{-(X'X + \Lambda)^{-1}\Lambda\beta}
+##'
+##'		where \eqn{\Lambda = diag(\lambda*penalize)}. The variance is given by: 
+##'
+##'			\eqn{\sigma^2(X'X + \Lambda)^{-1}X'X(X'X + \Lambda)^{-1}}
+##'		
+##' 	If \code{beta} is provided as a matrix, this will treat
+##' 	each column of \code{beta} as a different true parameter vector 
+##' 	and return a matrix of bias values (or a vector, if \code{ind} has length 1).
+##'
+##' 	Providing a pre-computed value of \code{XtXlamIinv} can reduce the computational
+##'		cost in simulations. However, the user is responsible for assuring that the value
+##' 	of \code{lambda} provided matches the value used to compute \code{XtXlamIinv}.
+##
 ##
 ##  Input:
-##' @param lambda Vector of shrinkage penalty parameters.
-##'	@param XtX The cross product of the design matrix.
-##' @param beta True value of the regression parameters
-##' @param sigma2 True value of the variance parameter
-##' @param penalize See \code{\link{estRidge}}
-##' @param ind Numeric or logical vector indicating which
-##' 		element for which MSE should be returned
-##' @param XtXlamIinv See details.
+##' @param lambda penalty parameter value. For \code{biasRidge} and \code{varRidge}, this should be 
+##'		a single value. For \code{mseRidge}, either a single value of a list of values.
+##' @param XtX Cross product of design matrix. Not needed if \code{XtXlamIinv} is provided.
+##' @param penalize Vector of penalty factors. See \code{\link{estRidge}} for more information.
+##' @param beta True parameter values. Either a vector of length \code{p} or a 
+##'			\code{p} x \code{d} matrix.
+##' @param sigma2 Value of the variance parameter
+##' @param ind Numerical or logical vector indicating which elements of the bias vector and
+##'		 variance matrix should be returned. Defaults to the first element.
+##' @param XtXlamIinv Optional explicit value of \code{(XtX + diag(lambda*penalize))^(-1)}.
+##	
+## Output:
+##'	@return  For \code{mseRidge}, a list containing the variance, bias, and MSE. For \code{biasRidge} and \code{varRidge}, a matrix is returned.
+##
 ##'
 ##' @export
 ##' @author Joshua Keller
-##' @seealso \code{\link{varRidge}, \link{biasRidge}}
 mseRidge <- function(lambda, XtX, beta, sigma2, penalize, ind=1, XtXlamIinv=NULL){
 	if (is.logical(ind)){
 		if (sum(ind)>1) stop("'ind' should be a single integer or logical vector with sum 1.")
@@ -200,6 +133,79 @@ mseRidge <- function(lambda, XtX, beta, sigma2, penalize, ind=1, XtXlamIinv=NULL
 		out <- list(var=rv, bias=rb, mse=rv+rb^2)
 	}
 	return(out)
+}
+
+
+
+##' @name biasRidge
+##' @rdname mseRidge
+##
+## NOTE: Merged into mseRidge
+##
+##
+##' @export
+## @author Joshua Keller
+##	@seealso \code{\link{estRidge}}
+biasRidge <- function (lambda, XtX, beta, penalize, ind = 1, XtXlamIinv=NULL) {
+    if (is.null(XtXlamIinv)){
+    		    	p <- ncol(XtX)
+    } else {
+    	  	    p <- ncol(XtXlamIinv)	
+    }
+    
+    	if(missing(penalize)) penalize <- c(0, rep(1, p-1))
+	
+	penalize <- as.numeric(penalize)
+    if (max(abs(penalize)) > 1) 
+        stop("Element of penalize must be <= 1.")
+    if (length(lambda) > 1) {
+        lambda <- lambda[1]
+        warning("lambda should be of length 1. Only using first value.")
+    }
+    penalty <- lambda * penalize
+    
+    if (is.null(XtXlamIinv)){
+	    if(nrow(XtX)!=p) stop("XtX must be square.")
+	    XtXlamIinv <- chol2inv(chol(XtX + diag(penalty)))
+    }
+    if (is.matrix(beta) && nrow(beta) != p) 
+        stop("Beta should be vector, or matrix with ncol(XtX) rows.")
+	XtXlamIinvB <- -crossprod(penalty*t(XtXlamIinv[ind, , drop=F]),  beta)
+    return(XtXlamIinvB)
+}
+
+
+##' @name varRidge
+##' @rdname mseRidge
+##
+## @description Computes the variance matrix of a ridge estimator, conditional on the penalty and global variance \code{sigma2}. Specifically, this function computes:
+##		where \eqn{\Lambda = diag(\lambda*penalize)}.
+##
+## @details See \code{\link{estRidge}} for description of \code{penalize} parameter.
+##
+##  Input:
+## @param XtX Cross product of design matrix
+## @param lambda Penalty parameter.
+##	@param penalize Vector giving what to penalize
+## @param ind Numerical or logical vector indicating which elements
+##		of the variance matrix diagonal should be returned. Defaults to the
+##		(1,1) element
+## @param XtXlamIinv Explicit value of \eqn{(X'X + diag(penalty))^(-1)},
+##		where \code{penalty=lambda*penalize}. Useful
+##		for simulations to save computation.
+##' @export
+## @author Joshua Keller
+## @seealso \code{\link{mseRidge}, \link{biasRidge}}
+varRidge <- function(lambda, XtX, sigma2=1, penalize, ind=1, XtXlamIinv=NULL){
+	if (is.null(XtXlamIinv)) {
+		if(missing(penalize)) penalize <- c(0, rep(1, ncol(XtX)-1))
+		penalize <- as.numeric(penalize)
+		if (max(abs(penalize))>1) stop("Element of penalize must be <= 1.")
+		penalty <- lambda*penalize	
+		XtXlamIinv <- chol2inv(chol(XtX + diag(penalty)))
+	}
+	rVar <-  sigma2 * XtXlamIinv %*% XtX %*% XtXlamIinv
+	return(rVar[ind, ind])
 }
 
 
@@ -261,7 +267,7 @@ getXtXlamIinv <- function (lambda, XtX, penalize) {
 ##'		standard error to compute. 'varExp' or 'full', corresponding
 ##'		to the variance of the conditional mean of the estimator or
 ##'		that plus the expected value of the conditional variance. In
-##'		practice, the latter is typically far too large.
+##'		practice, the latter is often too large.
 ##
 ##' @importFrom stats var
 ##' @export
@@ -312,15 +318,15 @@ vcovfestRidge <- function(fLoss, lambda, XtX, postBeta, postSigma2, penalize, in
 ##'		The value of the ridge or LASSO penalty is selected by minimizing the 
 ##'		posterior expectation of the loss function, which is chosen by the argument
 ##'		\code{loss}. Possible options are \code{fMBV}, which uses the loss function
-##'		\eqn{fMBV = \max(Bias(\beta)^2, Var(\beta))} and \code{fMSE}, which uses the loss function
+##'		\eqn{fMBV = max(Bias(\beta)^2, Var(\beta))} and \code{fMSE}, which uses the loss function
 ##'		\eqn{fMSE = Bias(\beta)^2 +  Var(\beta)}. 
 ##'	
 ##'		To balance the influence of covariates, it is recommended
 ##'		that the design matrix be standardized.  This can be done by
 ##'		the user or via the argument \code{scale}.  If \code{scale=TRUE},
-##'		then coefficent and standard error estimates are back-transformed.
+##'		then coefficient and standard error estimates are back-transformed.
 ##'
-##'		Use the \code{XtXlamIinv} arugment with caution. No checks are done on the provided
+##'		Use the \code{XtXlamIinv} argument with caution. No checks are done on the provided
 ##'		value. Note that \code{lseq} is re-ordered to be decreasing, and provided values
 ##'		of \code{XtXlamIinv} must account for this.
 ##'
@@ -328,8 +334,8 @@ vcovfestRidge <- function(fLoss, lambda, XtX, postBeta, postSigma2, penalize, in
 ##' @param X Design matrix for the regression. Assumed to contain only numeric values, so 
 ##'			any factors should be coded according to desired contrast (e.g., via \code{\link{model.matrix}})
 ##' @param y Outcome vector. Unless \code{X} contains an intercept column, this should typically be centered.
-##' @param loss Loss function for choosing the penaly parameter. See details.
-##'	@param ind Vector of ntegers or logicals indicating which coefficients the loss is to be computed on.
+##' @param loss Loss function for choosing the penalty parameter. See details.
+##'	@param ind Vector of integers or logicals indicating which coefficients the loss is to be computed on.
 ##' @param lseq Sequence of penalty values to consider.
 ##' @param penalize See \code{\link{estRidge}}
 ##' @param scale Logical indicating whether the design matrix X be scaled. See details.
@@ -337,17 +343,16 @@ vcovfestRidge <- function(fLoss, lambda, XtX, postBeta, postSigma2, penalize, in
 ##' @param postsamp List containing posterior sample (from \code{samplePosterior}). If
 ##'		missing, then a posterior sample is drawn.  Currently checks on the provided
 ##'		\code{postsamp} are limited, so use with caution.  Designed to facilitate
-##'		simualtions or other scenarios where it may be pre-computed.
+##'		simulations or other scenarios where it may be pre-computed.
 ##' @param returnPS logical indicating whether or not the full posterior sample should
 ##'		be included in output.
 ##' @param nPost Size of posterior sample to compute
 ##' @param se.version String indicating which version of standard errors to use. See \code{\link{vcovfestRidge}}.
-##'		the default SE type from \code{\link{varRidge}}.
 ##' @param XtXlamIinv explicit value of (X'X + diag(penalty))^{-1}.  Useful
 ##'		for simulations to save computation. 
 ##' @param ... Other arguments passed to \code{samplePosterior}
 ##' @export
-##' @seealso  \code{\link{mseRidge}}
+##' @seealso  \code{\link{mseRidge},\link{vcovfestRidge}, \link{simLASSO}, \link{check_CIbound}}
 ## \code{\link{festLASSO}}
 festRidge <- function(X, y, loss=c("fMSE", "fMBV", "both"), ind=1, lseq, penalize, scale=FALSE, returnMSE=FALSE, postsamp, returnPS=FALSE, nPost=1000, se.version =c("varExp", "full", "none"), XtXlamIinv=NULL, ...){
 

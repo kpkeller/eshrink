@@ -37,7 +37,7 @@
 ##
 ##'	@author Joshua Keller
 ##' @export
-##' @import glmnet
+##' @importFrom glmnet glmnet
 ##' @importFrom stats rnorm
 ##
 # Gets (sequence of) Lasso estimator for a given (sequence of) lambda
@@ -108,6 +108,12 @@ mseLASSO <- function(lambda, X, postsamp, nPost, B, penalize, ind){
 	out
 }	
 
+# Helper function
+getPopVar <- function(x) {
+	if(any(is.na(x))) warning("Missing values in x.")
+	mean((x - mean(x, na.rm=TRUE))^2, na.rm=TRUE)
+}
+
 ## @name festLASSO
 ##' @rdname festRidge
 # ##' @title Compute Lasso Estimator for simulated Data
@@ -119,27 +125,27 @@ mseLASSO <- function(lambda, X, postsamp, nPost, B, penalize, ind){
 # ##  Input:
 # ##'	@param X Design matrix of regression problem
 # ##' @param y outcome vector. Typically centered.
-# ##' @param loss Loss function for choosing the penaly parameter. See details.
+# ##' @param loss Loss function for choosing the penalty parameter. See details.
 # ##' @param penalize Vector giving penalty structure. Supplied to glmnet as `\code{penalty.factor}'.
 ##'	@param rescale.lambda If \code{TRUE}, then lambda is rescaled to account for the 
 ##'		default re-scaling done by \code{glmnet}. Can also be a scalar scaling factor.
 # ##' @param scale Logical indicating whether the design matrix X be scaled. See details.
 # ##'	@param returnMSE Logical indicating whether mse object should be returned.
-# ##'	@param ind Vector of ntegers or logicals indicating which coefficients the loss is to be computed on.
+# ##'	@param ind Vector of integers or logicals indicating which coefficients the loss is to be computed on.
 # ##' @param lseq Sequence of penalty values to consider. Sorted in decreasing order.
 ##' @param B Number of future datasets to simulate for each point in posterior sample.
 # ##'	@param se.version Which version of Standard errors to report?
 # ##' @param postsamp List containing posterior sample (from \code{samplePosterior}). If
 # ##'		missing, then a posterior sample is drawn.  Currently checks on the provided
 # ##'		\code{postsamp} are limited, so use with caution.  Designed to facilitate
-# ##'		simualtions or other scenarios where it may be pre-computed.
+# ##'		simulations or other scenarios where it may be pre-computed.
 # ##' @param returnPS logical indicating whether or not the full posterior sample should
 # ##'		be included in output.
 # ##' @param nPost Size of posterior sample to compute
 # ##' @param ... Other arguments passed to \code{samplePosterior}
 # ##'
 ##' @export
-# ##' @import glmnet
+##' @importFrom glmnet glmnet
 # ##
 # ##' @seealso \code{\link{festRidge}}, \code{\link{simLASSO}}
 # ##

@@ -21,9 +21,9 @@ any factors should be coded according to desired contrast (e.g., via \code{\link
 
 \item{y}{Outcome vector. Unless \code{X} contains an intercept column, this should typically be centered.}
 
-\item{loss}{Loss function for choosing the penaly parameter. See details.}
+\item{loss}{Loss function for choosing the penalty parameter. See details.}
 
-\item{ind}{Vector of ntegers or logicals indicating which coefficients the loss is to be computed on.}
+\item{ind}{Vector of integers or logicals indicating which coefficients the loss is to be computed on.}
 
 \item{lseq}{Sequence of penalty values to consider.}
 
@@ -41,15 +41,14 @@ default re-scaling done by \code{glmnet}. Can also be a scalar scaling factor.}
 \item{postsamp}{List containing posterior sample (from \code{samplePosterior}). If
 missing, then a posterior sample is drawn.  Currently checks on the provided
 \code{postsamp} are limited, so use with caution.  Designed to facilitate
-simualtions or other scenarios where it may be pre-computed.}
+simulations or other scenarios where it may be pre-computed.}
 
 \item{returnPS}{logical indicating whether or not the full posterior sample should
 be included in output.}
 
 \item{nPost}{Size of posterior sample to compute}
 
-\item{se.version}{String indicating which version of standard errors to use. See \code{\link{vcovfestRidge}}.
-the default SE type from \code{\link{varRidge}}.}
+\item{se.version}{String indicating which version of standard errors to use. See \code{\link{vcovfestRidge}}.}
 
 \item{...}{Other arguments passed to \code{samplePosterior}}
 
@@ -63,19 +62,19 @@ Computes a ridge or LASSO estimate for a given regression problem, with penalty 
 The value of the ridge or LASSO penalty is selected by minimizing the 
 	posterior expectation of the loss function, which is chosen by the argument
 	\code{loss}. Possible options are \code{fMBV}, which uses the loss function
-	\eqn{fMBV = \max(Bias(\beta)^2, Var(\beta))} and \code{fMSE}, which uses the loss function
+	\eqn{fMBV = max(Bias(\beta)^2, Var(\beta))} and \code{fMSE}, which uses the loss function
 	\eqn{fMSE = Bias(\beta)^2 +  Var(\beta)}. 
 
 	To balance the influence of covariates, it is recommended
 	that the design matrix be standardized.  This can be done by
 	the user or via the argument \code{scale}.  If \code{scale=TRUE},
-	then coefficent and standard error estimates are back-transformed.
+	then coefficient and standard error estimates are back-transformed.
 
-	Use the \code{XtXlamIinv} arugment with caution. No checks are done on the provided
+	Use the \code{XtXlamIinv} argument with caution. No checks are done on the provided
 	value. Note that \code{lseq} is re-ordered to be decreasing, and provided values
 	of \code{XtXlamIinv} must account for this.
 }
 \seealso{
-\code{\link{mseRidge}}
+\code{\link{mseRidge},\link{vcovfestRidge}, \link{simLASSO}, \link{check_CIbound}}
 }
 

@@ -39,7 +39,7 @@ of the variance matrix should be returned. Defaults to the
 standard error to compute. 'varExp' or 'full', corresponding
 to the variance of the conditional mean of the estimator or
 that plus the expected value of the conditional variance. In
-practice, the latter is typically far too large.}
+practice, the latter is often too large.}
 }
 \description{
 Computes an estimate of the variance-covariance

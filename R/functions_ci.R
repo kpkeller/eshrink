@@ -1,11 +1,11 @@
 ##' @name check_CIbound
-##' @title Test function for creating confidence intervals
+##' @title Confidence intervals for 'fLoss' estimators
 ##
-##' @description 'Inverts the test' to determine if a given value should lie in a confidence region
+##' @description Compute confidence intervals by 'inverting the test' to determine if a given value should lie in the confidence region.
 ##
-##' @details This function is used as part of an 'inverting the test' approach to generate confidence intervals for estimators from \code{\link{festRidge}}. \code{Bstar} datasets are generated from slices of the posterior distribution of the model parameters where beta (or other parameter indicated by \code{ind}) is fixed at the value \code{testBeta}. For each dataset, beta is estimated via \code{\link{festRidge}}, and the resulting distribution of estimators is compared against the estimate from the observed data (\code{obsEst}).
+##' @details This function is used as part of an 'inverting the test' approach to generate confidence intervals for estimators from \code{\link{festRidge}}. \code{Bstar} datasets are generated from slices of the posterior distribution of the model parameters where beta (or other parameter indicated by \code{ind}) is fixed at the value \code{testBeta}. For each dataset, beta is estimated via \code{\link{festRidge}} or \code{\link{festLASSO}}, and the resulting distribution of estimators is compared against the estimate from the observed data (\code{obsEst}).
 ##' 
-##' The values of \code{lambdaseq}, \code{X}, \code{nPost}, and \code{loss} are passed to \code{\link{festRidge}} and typically match the values that were used to compute \code{obsEst}.
+##' The values of \code{lambdaseq}, \code{X}, \code{nPost}, and \code{loss} are passed to \code{\link{festRidge}} or \code{\link{festLASSO}} and typically match the values that were used to compute \code{obsEst}.
 ##'
 ##' The computational cost of this function is most affected by the values of
 ##'	\code{nPost} and \code{Bstar}. Large values of the latter are important for 
@@ -15,8 +15,8 @@
 ##
 ##' @param testBeta Candidate value of beta to test.
 ##' @param obsEst Estimate of beta from the observed data for which a confidence interval is desired
-##' @param posthyper List of hyperparameters for the posterior distribution of model parameters. See \code{\link{samplePosterior}} for expected names.
-##' @param type String indicating ridge or LASSO
+##' @param postParam List of parameters for the posterior distribution of beta. See \code{\link{samplePosterior}} for expected names.
+##' @param type String indicating "ridge" or "LASSO".
 ##' @param lambdaseq Sequence of penalty values
 ##' @param X deisgn matrix
 ##' @param nPost Number of posterior samples to use.
@@ -33,14 +33,16 @@
 ##' @export
 ##' @importFrom stats uniroot
 ##' @author Joshua Keller
-check_CIbound <- function(testBeta, obsEst, type=c("ridge", "lasso"), posthyper,  lambdaseq, X, nPost, ind=1, Bstar=100,  B=500, loss="fMBV", lowerBound=TRUE, reproducible=TRUE, alpha=0.025, returnDist=FALSE, ...) {
+##'
+##' @seealso \code{\link{festRidge}}
+check_CIbound <- function(testBeta, obsEst, type=c("ridge", "lasso"), postParam,  lambdaseq, X, nPost, ind=1, Bstar=100,  B=500, loss="fMBV", lowerBound=TRUE, reproducible=TRUE, alpha=0.025, returnDist=FALSE, ...) {
 	type <- match.arg(type)
 	p <- ncol(X)
 	XtX <- crossprod(X)
-	gammaMu <- posthyper $postMu[-ind] + posthyper $postV[-ind, ind]/posthyper $postV[ind, ind]*(testBeta - posthyper $postMu[ind])
-	gammaV <- posthyper $postV[-ind, -ind] - tcrossprod(posthyper $postV[-ind, ind], posthyper $postV[ind, -ind])/posthyper $postV[ind, ind]
+	gammaMu <- postParam $postMu[-ind] + postParam $postV[-ind, ind]/postParam $postV[ind, ind]*(testBeta - postParam $postMu[ind])
+	gammaV <- postParam $postV[-ind, -ind] - tcrossprod(postParam $postV[-ind, ind], postParam $postV[ind, -ind])/postParam $postV[ind, ind]
 	if(reproducible) set.seed(ind[1])
-	sigma2star <- 1/rgamma(n= Bstar, shape= posthyper $an, rate= posthyper $bn)
+	sigma2star <- 1/rgamma(n= Bstar, shape= postParam $an, rate= postParam $bn)
 	gammastar <- MASS::mvrnorm(n= Bstar, mu=rep(0, p-1), Sigma= gammaV)
 	gammastar <- t(t(gammastar*sqrt(sigma2star)) + as.vector(gammaMu))
 	betafMBVstar <- numeric(Bstar)
@@ -77,7 +79,7 @@ check_CIbound <- function(testBeta, obsEst, type=c("ridge", "lasso"), posthyper,
 ##
 ##' @param interval Interval to check. Used for both upper and lower bound, if they are not provided
 ##' @param lower.interval,upper.interval Bounding intervals over which to check for lower and upper endpoints of CI
-##' @param ... In \code{invertTest }, these are passed to \code{check_CIbound}. In 
+##' @param ... In \code{invertTest}, these are passed to \code{check_CIbound}. In 
 ##'		\code{check_CIbound}, these arguments are passed to \code{\link{samplePosterior}}.
 ##' @param tol Passed to \code{\link{uniroot}}
 ##' @param fulldetail If TRUE, then output from \code{\link{uniroot}} is included.

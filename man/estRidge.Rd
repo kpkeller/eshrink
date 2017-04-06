@@ -7,26 +7,32 @@
 estRidge(lambda, X, y, penalize, XtX = crossprod(X))
 }
 \arguments{
-\item{lambda}{Ridge penalty factor}
+\item{lambda}{ridge penalty factor}
 
-\item{X}{Design matrix for the regression. Assumed to contain only numeric values, so 
-any factors should be coded according to desired contrast (e.g., via \code{\link{model.matrix}})}
+\item{X}{design matrix for the regression.}
 
-\item{y}{Outcome vector. Unless \code{X} contains an intercept column, this should typically be centered.}
+\item{y}{outcome vector. Unless \code{X} contains an intercept column, this should typically be centered.}
 
-\item{penalize}{Vector giving penalty structure. Values must be in [0, 1].}
+\item{penalize}{vector giving penalty structure. Values must be in [0, 1].}
 
-\item{XtX}{the cross product of the design matrix. Computed from
-\code{X} if not provided.}
+\item{XtX}{(optional) cross product of the design matrix. If running simulations or 
+other procedure for identical \code{X}, providing a pre-computed value 
+can reduce computational cost.}
 }
 \description{
 Computes a vector of regression coefficients for a provided ridge penalty.
 }
 \details{
-The input \code{penalize} is a vector of penalty factors, 
+The input \code{penalize} is a vector of ridge penalty factors, 
 such that the penalty for covariate j is \code{lambda*penalize[j]}.
 Although its primary purpose is for indicating which variables to penalize (1)
 and which to not penalize (0), fractional values between 0 and 1 are accepted.
+Defaults to c(0, rep(1, p-1)), where
+p is number of columns in X (this penalizes all coefficients but 
+the first).  
+
+The design matrix \code{X} is assumed to contain only numeric values, so 
+		any factors should be coded according to desired contrast (e.g., via \code{\link{model.matrix}})
 }
 \author{
 Joshua Keller

@@ -5,45 +5,53 @@
 \title{Posterior Sample for Bayesian Linear Regression}
 \usage{
 samplePosterior(X, y, n, a0 = 1, b0 = 5e-05, v0inv = 1/1000, mu0 = 0,
-  hyperPost = FALSE, intercept = FALSE)
+  returnParams = TRUE, intercept = FALSE)
 }
 \arguments{
-\item{X}{A data matrix of size \code{n} by \code{p}.}
+\item{X}{Design matrix of size \code{n} by \code{p}.}
 
 \item{y}{Outcome variable}
 
-\item{n}{Size of posterior sample}
+\item{n}{Size of posterior sample to be computed. A value of 0 is accepted.}
 
-\item{a0, b0}{Hyperparameters for inverse gamma
-distribution of the error varaince.}
+\item{a0, b0}{Hyperparameters (shape, rate) for inverse gamma
+distribution of the error variance.}
 
 \item{v0inv}{Prior precision for the error term.  Either a single value
 to be repeated in a diagonal precision matrix, or a \code{p} by \code{p}
 matrix.}
 
-\item{mu0}{Prior mean.  Defaults to zero vector.}
+\item{mu0}{Prior mean. Either a single value that will be repeated,
+or a vector of length \code{p}.   Defaults to zero vector.}
 
-\item{hyperPost}{Logical indicating whether the posterior hyperparameters are returned.}
+\item{returnParams}{Logical indicating whether the parameters of the posterior distribution are returned.}
 
 \item{intercept}{Logical indicating whether an intercept is included in the model.
-If \code{FALSE}, then \code{y} is centered prior to computations.}
+If \code{FALSE}, then \code{y} is centered.}
 }
 \value{
 A list containing the following elements:
-\item{sigma2}{A vector containing the posterior sample of \eqn{sigma^2} values.}
-\item{beta}{Matrix containing the posterior sample of \eqn{beta} values.}
-\item{postMu}{Vector containing the posterior mean (if \code{moments=TRUE}).}
-\item{postV}{Matrix giving the posterior mean (if \code{moments=TRUE}).}
-\item{wSS}{Mean within-cluster sum-of-squares}
+\item{sigma2}{A vector containing the posterior sample of \eqn{\sigma^2} values.}
+\item{beta}{Matrix containing the posterior sample of \eqn{\beta} values.}
+\item{postMu}{Vector containing the posterior mean (if \code{returnParams =TRUE}).}
+\item{postV}{Matrix giving the posterior mean (if \code{returnParams =TRUE}).}
+\item{an,bn}{Posterior hyperparameters for the  inverse gamma
+	distribution of the error variance (if \code{returnParams =TRUE}).}
 }
 \description{
-Computes and provides a sample from the posterior
+Draws a sample from the posterior
 	distribution of parameters from a Bayesian Linear regression
 	model.
 }
 \details{
-Assumes a normal-inverse-gamma model, where the distribution
-	of the regression coefficients is conditional on \eqn{sigma^2}.
+This function draws a sample from the posterior distributions of the coefficient parameter (\eqn{\beta}) and error variance parameter (\eqn{\sigma^2}) from a Bayesian linear regression model. The variance parameter is assumed to follow an inverse-gamma distribution. Conditional on the error variance parameter and a specified precision matrix, the coefficient parameters (\eqn{\beta}) are multivariate normal.
+}
+\examples{
+x <- rnorm(40, mean=2, sd=2)
+y <- x + rnorm(40, sd=1)
+samplePosterior(X=x, y=y, n=10)
+samplePosterior(X=cbind(1, x), y=y, n=10, intercept=TRUE)
+samplePosterior(X=cbind(1, x), y=y, n=0, mu=c(3, 3), intercept=TRUE)
 }
 \author{
 Joshua Keller

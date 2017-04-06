@@ -3,9 +3,9 @@
 \name{check_CIbound}
 \alias{check_CIbound}
 \alias{invertTest}
-\title{Test function for creating confidence intervals}
+\title{Confidence intervals for 'fLoss' estimators}
 \usage{
-check_CIbound(testBeta, obsEst, type = c("ridge", "lasso"), posthyper,
+check_CIbound(testBeta, obsEst, type = c("ridge", "lasso"), postParam,
   lambdaseq, X, nPost, ind = 1, Bstar = 100, B = 500, loss = "fMBV",
   lowerBound = TRUE, reproducible = TRUE, alpha = 0.025,
   returnDist = FALSE, ...)
@@ -18,9 +18,9 @@ invertTest(interval, type = "ridge", lower.interval = interval,
 
 \item{obsEst}{Estimate of beta from the observed data for which a confidence interval is desired}
 
-\item{type}{String indicating ridge or LASSO}
+\item{type}{String indicating "ridge" or "LASSO".}
 
-\item{posthyper}{List of hyperparameters for the posterior distribution of model parameters. See \code{\link{samplePosterior}} for expected names.}
+\item{postParam}{List of parameters for the posterior distribution of beta. See \code{\link{samplePosterior}} for expected names.}
 
 \item{lambdaseq}{Sequence of penalty values}
 
@@ -45,7 +45,7 @@ invertTest(interval, type = "ridge", lower.interval = interval,
 \item{returnDist}{If TRUE, then distribution of estimates generated is returned
 instead of comparison against \code{alpha}}
 
-\item{...}{In \code{invertTest }, these are passed to \code{check_CIbound}. In 
+\item{...}{In \code{invertTest}, these are passed to \code{check_CIbound}. In 
 \code{check_CIbound}, these arguments are passed to \code{\link{samplePosterior}}.}
 
 \item{interval}{Interval to check. Used for both upper and lower bound, if they are not provided}
@@ -57,12 +57,12 @@ instead of comparison against \code{alpha}}
 \item{fulldetail}{If TRUE, then output from \code{\link{uniroot}} is included.}
 }
 \description{
-'Inverts the test' to determine if a given value should lie in a confidence region
+Compute confidence intervals by 'inverting the test' to determine if a given value should lie in the confidence region.
 }
 \details{
-This function is used as part of an 'inverting the test' approach to generate confidence intervals for estimators from \code{\link{festRidge}}. \code{Bstar} datasets are generated from slices of the posterior distribution of the model parameters where beta (or other parameter indicated by \code{ind}) is fixed at the value \code{testBeta}. For each dataset, beta is estimated via \code{\link{festRidge}}, and the resulting distribution of estimators is compared against the estimate from the observed data (\code{obsEst}).
+This function is used as part of an 'inverting the test' approach to generate confidence intervals for estimators from \code{\link{festRidge}}. \code{Bstar} datasets are generated from slices of the posterior distribution of the model parameters where beta (or other parameter indicated by \code{ind}) is fixed at the value \code{testBeta}. For each dataset, beta is estimated via \code{\link{festRidge}} or \code{\link{festLASSO}}, and the resulting distribution of estimators is compared against the estimate from the observed data (\code{obsEst}).
 
-The values of \code{lambdaseq}, \code{X}, \code{nPost}, and \code{loss} are passed to \code{\link{festRidge}} and typically match the values that were used to compute \code{obsEst}.
+The values of \code{lambdaseq}, \code{X}, \code{nPost}, and \code{loss} are passed to \code{\link{festRidge}} or \code{\link{festLASSO}} and typically match the values that were used to compute \code{obsEst}.
 
 The computational cost of this function is most affected by the values of
 \code{nPost} and \code{Bstar}. Large values of the latter are important for 
@@ -72,5 +72,8 @@ the results. However, each dataset is likely to be different.
 }
 \author{
 Joshua Keller
+}
+\seealso{
+\code{\link{festRidge}}
 }
 
