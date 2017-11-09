@@ -35,10 +35,9 @@ the first).
 The design matrix \code{X} is assumed to contain only numeric values, so 
 		any factors should be coded according to desired contrast (e.g., via \code{\link{model.matrix}})
 }
-\author{
-Joshua Keller
-}
 \seealso{
 \code{\link{festRidge}}, \code{\link{mseRidge}}
 }
-
+\author{
+Joshua Keller
+}

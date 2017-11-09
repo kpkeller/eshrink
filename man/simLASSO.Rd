@@ -37,4 +37,3 @@ Simulates data from a regression model with true
 \author{
 Joshua Keller
 }
-

@@ -53,10 +53,9 @@ Computes a standard error estimate for an 'fLoss'
 	using the posterior distribution of parameters).
     Currently, two different versions are available.
 }
-\author{
-Joshua Keller
-}
 \seealso{
 \code{\link{festRidge}, \link{samplePosterior}}
 }
-
+\author{
+Joshua Keller
+}

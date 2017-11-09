@@ -77,4 +77,3 @@ The value of the ridge or LASSO penalty is selected by minimizing the
 \seealso{
 \code{\link{mseRidge},\link{vcovfestRidge}, \link{simLASSO}, \link{check_CIbound}}
 }
-

@@ -70,10 +70,9 @@ adequately representing the distribution of parameter estimates. In some
 settings, \code{nPost} can be reduced without substantially impacting
 the results. However, each dataset is likely to be different.
 }
-\author{
-Joshua Keller
-}
 \seealso{
 \code{\link{festRidge}}
 }
-
+\author{
+Joshua Keller
+}
