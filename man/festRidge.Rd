@@ -5,15 +5,40 @@
 \alias{festRidge}
 \title{Compute `Future Loss' Ridge or LASSO Estimates}
 \usage{
-festLASSO(X, y, loss = c("fMSE", "fMBV", "both"), ind = 1, lseq, B = 500,
-  penalize, rescale.lambda = TRUE, scale = FALSE, returnMSE = FALSE,
-  postsamp, returnPS = FALSE, nPost = 1000, se.version = c("varExp",
-  "full", "none"), ...)
+festLASSO(
+  X,
+  y,
+  loss = c("fMSE", "fMBV", "both"),
+  ind = 1,
+  lseq,
+  B = 500,
+  penalize,
+  rescale.lambda = TRUE,
+  scale = FALSE,
+  returnMSE = FALSE,
+  postsamp,
+  returnPS = FALSE,
+  nPost = 1000,
+  se.version = c("varExp", "full", "none"),
+  ...
+)
 
-festRidge(X, y, loss = c("fMSE", "fMBV", "both"), ind = 1, lseq, penalize,
-  scale = FALSE, returnMSE = FALSE, postsamp, returnPS = FALSE,
-  nPost = 1000, se.version = c("varExp", "full", "none"),
-  XtXlamIinv = NULL, ...)
+festRidge(
+  X,
+  y,
+  loss = c("fMSE", "fMBV", "both"),
+  ind = 1,
+  lseq,
+  penalize,
+  scale = FALSE,
+  returnMSE = FALSE,
+  postsamp,
+  returnPS = FALSE,
+  nPost = 1000,
+  se.version = c("varExp", "full", "none"),
+  XtXlamIinv = NULL,
+  ...
+)
 }
 \arguments{
 \item{X}{Design matrix for the regression. Assumed to contain only numeric values, so 

@@ -4,8 +4,17 @@
 \alias{samplePosterior}
 \title{Posterior Sample for Bayesian Linear Regression}
 \usage{
-samplePosterior(X, y, n, a0 = 1, b0 = 5e-05, v0inv = 1/1000, mu0 = 0,
-  returnParams = TRUE, intercept = FALSE)
+samplePosterior(
+  X,
+  y,
+  n,
+  a0 = 1,
+  b0 = 5e-05,
+  v0inv = 1/1000,
+  mu0 = 0,
+  returnParams = TRUE,
+  intercept = FALSE
+)
 }
 \arguments{
 \item{X}{Design matrix of size \code{n} by \code{p}.}
