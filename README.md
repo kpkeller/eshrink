@@ -1,6 +1,6 @@
 # eshrink
 [![CRAN Status](http://www.r-pkg.org/badges/version/eshrink)](https://cran.r-project.org/package=eshrink)
-
+[![](https://cranlogs.r-pkg.org/badges/eshrink)](https://cran.r-project.org/package=eshrink)
 
 Shrinkage estimators for estimating regression parameters
 
