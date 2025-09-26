@@ -39,5 +39,5 @@ The design matrix \code{X} is assumed to contain only numeric values, so
 \code{\link{festRidge}}, \code{\link{mseRidge}}
 }
 \author{
-Joshua Keller
+Kayleigh Keller
 }

@@ -35,7 +35,7 @@
 ##'	@param ind Index of coefficient to be returned.  Value of 0 implies
 ##'		all coefficients (i.e. the full parameter vector estimate)
 ##
-##'	@author Joshua Keller
+##'	@author Kayleigh Keller
 ##' @export
 ##' @importFrom glmnet glmnet
 ##' @importFrom stats rnorm

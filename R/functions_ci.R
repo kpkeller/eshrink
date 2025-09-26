@@ -32,7 +32,7 @@
 ##'
 ##' @export
 ##' @importFrom stats uniroot
-##' @author Joshua Keller
+##' @author Kayleigh Keller
 ##'
 ##' @seealso \code{\link{festRidge}}
 check_CIbound <- function(testBeta, obsEst, type=c("ridge", "lasso"), postParam,  lambdaseq, X, nPost, ind=1, Bstar=100,  B=500, loss="fMBV", lowerBound=TRUE, reproducible=TRUE, alpha=0.025, returnDist=FALSE, ...) {
@@ -88,7 +88,7 @@ check_CIbound <- function(testBeta, obsEst, type=c("ridge", "lasso"), postParam,
 ## @details A wrapper for \code{\link{check_CIbound}} that uses a root-finding
 ## search to find boundaries.
 ##' @export
-## @author Joshua Keller
+## @author Kayleigh Keller
 invertTest <- function(interval, type="ridge", lower.interval=interval, upper.interval=interval, ..., tol=0.005, fulldetail=FALSE){
 	
 	ui_lower <- uniroot(f= check_CIbound, lowerBound=TRUE, type= type, ...,  interval= lower.interval, tol=tol)

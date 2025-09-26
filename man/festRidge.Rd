@@ -77,7 +77,7 @@ be included in output.}
 
 \item{...}{Other arguments passed to \code{samplePosterior}}
 
-\item{XtXlamIinv}{explicit value of (X'X + diag(penalty))^{-1}.  Useful
+\item{XtXlamIinv}{Optional explicit value of \code{(XtX + diag(lambda*penalize))^(-1)}. Useful
 for simulations to save computation.}
 }
 \description{

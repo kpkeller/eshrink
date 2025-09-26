@@ -1,15 +1,13 @@
 Package: eshrink
 Title: Shrinkage for Effect Estimation
-Version: 0.1.2
-Author: Joshua Keller
-Maintainer: Joshua Keller <joshua.keller@colostate.edu>
-Description: Computes shrinkage estimators for regression problems. Selects
-    penalty parameter by minimizing bias and variance in the effect estimate, where bias and variance are estimated from the posterior predictive distribution. See Keller and Rice (2017) <doi:10.1093/aje/kwx225> for more details.
+Version: 0.2.0
+Authors@R: c(person("Kayleigh", "Keller", email = "kayleigh.keller@colostate.edu", role = c("aut", "cre")))
+Description: Computes shrinkage estimators for regression problems. Selects penalty parameter by minimizing bias and variance in the effect estimate, where bias and variance are estimated from the posterior predictive distribution. See Keller and Rice (2017) <doi:10.1093/aje/kwx225> for more details.
 Depends:
     R (>= 3.2.0)
 Imports:
     MASS,
     glmnet
 License: GPL (>=2)
-LazyData: true
-RoxygenNote: 7.1.1
+Encoding: UTF-8
+RoxygenNote: 7.3.3

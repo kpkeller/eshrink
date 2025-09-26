@@ -1,6 +1,5 @@
 ##' @name eshrink-package
 ##' @title Shrinkage Estimators for Regression
-##' @docType package
 ##' @aliases eshrink eshrink-package
 ##' @description Computes shrinkage estimators for regression problems. Selects
 ##' penalty parameter by minimizing bias and variance in the effect estimate,

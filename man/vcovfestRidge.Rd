@@ -65,5 +65,5 @@ Computes a standard error estimate for an 'fLoss'
 \code{\link{festRidge}, \link{samplePosterior}}
 }
 \author{
-Joshua Keller
+Kayleigh Keller
 }

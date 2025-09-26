@@ -35,5 +35,5 @@ Simulates data from a regression model with true
 	function from the package of the same name.
 }
 \author{
-Joshua Keller
+Kayleigh Keller
 }

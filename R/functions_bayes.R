@@ -36,7 +36,7 @@
 ##' @export
 ##' @importFrom MASS mvrnorm
 ##' @importFrom stats rgamma
-##' @author Joshua Keller
+##' @author Kayleigh Keller
 ##
 ##' @examples
 ##' x <- rnorm(40, mean=2, sd=2)

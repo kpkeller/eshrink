@@ -45,7 +45,7 @@
 ##'		can reduce computational cost.
 ##
 ##' @export
-##' @author Joshua Keller
+##' @author Kayleigh Keller
 ##' @seealso \code{\link{festRidge}}, \code{\link{mseRidge}}
 estRidge <- function(lambda, X, y,  penalize, XtX=crossprod(X)){
 	if(missing(penalize)) penalize <- c(0, rep(1, ncol(XtX)-1))
@@ -100,7 +100,7 @@ estRidge <- function(lambda, X, y,  penalize, XtX=crossprod(X)){
 ##
 ##'
 ##' @export
-##' @author Joshua Keller
+##' @author Kayleigh Keller
 mseRidge <- function(lambda, XtX, beta, sigma2, penalize, ind=1, XtXlamIinv=NULL){
 	if (is.logical(ind)){
 		if (sum(ind)>1) stop("'ind' should be a single integer or logical vector with sum 1.")
@@ -144,7 +144,7 @@ mseRidge <- function(lambda, XtX, beta, sigma2, penalize, ind=1, XtXlamIinv=NULL
 ##
 ##
 ##' @export
-## @author Joshua Keller
+## @author Kayleigh Keller
 ##	@seealso \code{\link{estRidge}}
 biasRidge <- function (lambda, XtX, beta, penalize, ind = 1, XtXlamIinv=NULL) {
     if (is.null(XtXlamIinv)){
@@ -194,7 +194,7 @@ biasRidge <- function (lambda, XtX, beta, penalize, ind = 1, XtXlamIinv=NULL) {
 ##		where \code{penalty=lambda*penalize}. Useful
 ##		for simulations to save computation.
 ##' @export
-## @author Joshua Keller
+## @author Kayleigh Keller
 ## @seealso \code{\link{mseRidge}, \link{biasRidge}}
 varRidge <- function(lambda, XtX, sigma2=1, penalize, ind=1, XtXlamIinv=NULL){
 	if (is.null(XtXlamIinv)) {
@@ -271,7 +271,7 @@ getXtXlamIinv <- function (lambda, XtX, penalize) {
 ##
 ##' @importFrom stats var
 ##' @export
-##' @author Joshua Keller
+##' @author Kayleigh Keller
 ##' @seealso \code{\link{festRidge}, \link{samplePosterior}}
 vcovfestRidge <- function(fLoss, lambda, XtX, postBeta, postSigma2, penalize, ind=1, version=c("varExp", "full")){
 	version <- match.arg(version)
@@ -348,7 +348,7 @@ vcovfestRidge <- function(fLoss, lambda, XtX, postBeta, postSigma2, penalize, in
 ##'		be included in output.
 ##' @param nPost Size of posterior sample to compute
 ##' @param se.version String indicating which version of standard errors to use. See \code{\link{vcovfestRidge}}.
-##' @param XtXlamIinv explicit value of (X'X + diag(penalty))^{-1}.  Useful
+##' @param XtXlamIinv Optional explicit value of \code{(XtX + diag(lambda*penalize))^(-1)}. Useful
 ##'		for simulations to save computation. 
 ##' @param ... Other arguments passed to \code{samplePosterior}
 ##' @export

@@ -57,5 +57,5 @@ The computations assume that all covariates are correctly included in the
 	of \code{lambda} provided matches the value used to compute \code{XtXlamIinv}.
 }
 \author{
-Joshua Keller
+Kayleigh Keller
 }

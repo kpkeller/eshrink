@@ -95,5 +95,5 @@ the results. However, each dataset is likely to be different.
 \code{\link{festRidge}}
 }
 \author{
-Joshua Keller
+Kayleigh Keller
 }
